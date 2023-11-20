@@ -85,3 +85,39 @@ jobs:
           HELICONE_CACHE_ENABLED: false
           HELICONE_PROPERTY_AGENT: ${{ matrix.agent-name }}
           REPORT_LOCATION: ${{ format('../../reports/{0}', matrix.agent-name) }}
+          
+  build-microprint:
+    if: '!cancelled()'
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write
+
+    needs: tests
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        agent-name: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Pull changes
+        run: git pull
+
+      - name: Get microprint of build job logs
+        uses: AlphaSteam/GHuPrintGen@v5
+        with:
+            job_name: build
+            log_path: ./log_microprints
+            microprint_path: ./log_microprints
+            microprint_config_path: ./log_microprints
+            microprint_visualizer_link_path: ./log_microprints
+
+      - name: Commit microprint
+        uses: stefanzweifel/git-auto-commit-action@v5    
