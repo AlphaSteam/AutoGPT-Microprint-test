@@ -7,7 +7,7 @@ on:
       agents:
         description: "Agents to run (comma-separated)"
         required: false
-        default: "ZEROAGPT_03" # Default agents if none are specified
+        default: "gpt-engineer" # Default agents if none are specified
 
 jobs:
   matrix-setup:
