@@ -97,11 +97,6 @@ jobs:
       contents: write
 
     needs: tests
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        agent-name: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
 
     steps:
       - name: Checkout code
