@@ -118,7 +118,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        agent-name: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
+        agent-name: ${{fromJson(needs.tests.outputs.matrix)}}
 
     steps:
       - name: Checkout code
