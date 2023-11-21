@@ -39,6 +39,9 @@ jobs:
       min-python-version: "3.10"
     name: "${{ matrix.agent-name }}"
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      env-name: ${{ steps.set-matrix.outputs.env-name }}
     timeout-minutes: 50
     strategy:
       fail-fast: false
@@ -85,6 +88,20 @@ jobs:
           HELICONE_CACHE_ENABLED: false
           HELICONE_PROPERTY_AGENT: ${{ matrix.agent-name }}
           REPORT_LOCATION: ${{ format('../../reports/{0}', matrix.agent-name) }}
+      - id: set-matrix
+        run: |
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            echo "::set-output name=env-name::production"
+            echo "::set-output name=matrix::[ 'gpt-engineer', 'smol-developer', 'Auto-GPT', 'mini-agi', 'beebot', 'BabyAGI', 'PolyGPT', 'Turbo' ]"
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            IFS=',' read -ra matrix_array <<< "${{ github.event.inputs.agents }}"
+            matrix_string="[ \"$(echo "${matrix_array[@]}" | sed 's/ /", "/g')\" ]"
+            echo "::set-output name=env-name::production"
+            echo "::set-output name=matrix::$matrix_string"
+          else
+            echo "::set-output name=env-name::testing"
+            echo "::set-output name=matrix::[ 'mini-agi' ]"
+          fi
           
   build-microprint:
     if: '!cancelled()'
@@ -98,6 +115,11 @@ jobs:
 
     needs: tests
 
+    strategy:
+      fail-fast: false
+      matrix:
+        agent-name: ${{fromJson(needs.matrix-setup.outputs.matrix)}}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -108,7 +130,7 @@ jobs:
       - name: Get microprint of build job logs
         uses: AlphaSteam/GHuPrintGen@v5
         with:
-            job_name: build
+            job_name: "${{ matrix.agent-name }}"
             log_path: ./log_microprints
             microprint_path: ./log_microprints
             microprint_config_path: ./log_microprints
