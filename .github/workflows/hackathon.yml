@@ -40,8 +40,8 @@ jobs:
     name: "${{ matrix.agent-name }}"
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-      env-name: ${{ steps.set-matrix.outputs.env-name }}
+      matrix: ${{ steps.tests.outputs.matrix }}
+      env-name: ${{ steps.tests.outputs.env-name }}
     timeout-minutes: 50
     strategy:
       fail-fast: false
@@ -105,6 +105,9 @@ jobs:
           
   build-microprint:
     if: '!cancelled()'
+
+    environment:
+      name: "${{ needs.matrix-setup.outputs.env-name }}"
 
     runs-on: ubuntu-latest
 
