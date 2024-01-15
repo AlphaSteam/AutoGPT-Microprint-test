@@ -2,7 +2,6 @@ name: Hackathon
 
 on:
   workflow_dispatch:
-    branches: [hackathon]
     inputs:
       agents:
         description: "Agents to run (comma-separated)"
@@ -102,42 +101,3 @@ jobs:
             echo "::set-output name=env-name::testing"
             echo "::set-output name=matrix::[ 'mini-agi' ]"
           fi
-          
-  build-microprint:
-    if: '!cancelled()'
-
-    environment:
-      name: "${{ needs.matrix-setup.outputs.env-name }}"
-
-    runs-on: ubuntu-latest
-
-    permissions:
-      # Give the default GITHUB_TOKEN write permission to commit and push the
-      # added or changed files to the repository.
-      contents: write
-
-    needs: tests
-
-    strategy:
-      fail-fast: false
-      matrix:
-        agent-name: ${{fromJson(needs.tests.outputs.matrix)}}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Pull changes
-        run: git pull
-
-      - name: Get microprint of build job logs
-        uses: AlphaSteam/GHuPrintGen@v5
-        with:
-            job_name: "${{ matrix.agent-name }}"
-            log_path: ./log_microprints
-            microprint_path: ./log_microprints
-            microprint_config_path: ./log_microprints
-            microprint_visualizer_link_path: ./log_microprints
-
-      - name: Commit microprint
-        uses: stefanzweifel/git-auto-commit-action@v5    
